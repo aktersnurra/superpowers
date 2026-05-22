@@ -1,15 +1,15 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work using jj bookmarks, push, or cleanup
 ---
 
-# Finishing a Development Branch
+# Finishing Development Work
 
 ## Overview
 
-Guide completion of development work by presenting clear options and handling chosen workflow.
+Guide completion of development work by presenting clear options and handling the chosen jj workflow.
 
-**Core principle:** Verify tests → Detect environment → Present options → Execute choice → Clean up.
+**Core principle:** Verify tests → inspect jj workspace → present options → execute choice → clean up only what this workflow owns.
 
 **Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
 
@@ -17,140 +17,132 @@ Guide completion of development work by presenting clear options and handling ch
 
 ### Step 1: Verify Tests
 
-**Before presenting options, verify tests pass:**
+Before presenting options, verify tests pass:
 
 ```bash
 # Run project's test suite
 npm test / cargo test / pytest / go test ./...
 ```
 
-**If tests fail:**
+If tests fail:
+
 ```
 Tests failing (<N> failures). Must fix before completing:
 
 [Show failures]
 
-Cannot proceed with merge/PR until tests pass.
+Cannot proceed with publish/discard until tests pass.
 ```
 
 Stop. Don't proceed to Step 2.
 
-**If tests pass:** Continue to Step 2.
+### Step 2: Inspect jj State
 
-### Step 2: Detect Environment
-
-**Determine workspace state before presenting options:**
+Determine workspace and change state before presenting options:
 
 ```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
+jj workspace root
+jj workspace list
+jj st
+jj log -r 'ancestors(@, 5)'
 ```
 
-This determines which menu to show and how cleanup works:
+Note:
 
-| State | Menu | Cleanup |
-|-------|------|---------|
-| `GIT_DIR == GIT_COMMON` (normal repo) | Standard 4 options | No worktree to clean up |
-| `GIT_DIR != GIT_COMMON`, named branch | Standard 4 options | Provenance-based (see Step 6) |
-| `GIT_DIR != GIT_COMMON`, detached HEAD | Reduced 3 options (no merge) | No cleanup (externally managed) |
+- current workspace path
+- current working-copy change (`@`)
+- whether a bookmark already points at the work
+- whether there are conflicts or failing tests
 
-### Step 3: Determine Base Branch
+### Step 3: Ensure Change Description
+
+If `@` does not have a meaningful description, set one before publishing or handing off:
 
 ```bash
-# Try common base branches
-git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
+jj describe -m "<clear summary of completed work>"
 ```
-
-Or ask: "This branch split from main - is that correct?"
 
 ### Step 4: Present Options
 
-**Normal repo and named-branch worktree — present exactly these 4 options:**
+Present exactly these 4 options:
 
 ```
 Implementation complete. What would you like to do?
 
-1. Merge back to <base-branch> locally
-2. Push and create a Pull Request
-3. Keep the branch as-is (I'll handle it later)
+1. Publish via jj bookmark and push
+2. Keep the jj workspace as-is (I'll handle it later)
+3. Squash into parent change
 4. Discard this work
 
 Which option?
 ```
 
-**Detached HEAD — present exactly these 3 options:**
-
-```
-Implementation complete. You're on a detached HEAD (externally managed workspace).
-
-1. Push as new branch and create a Pull Request
-2. Keep as-is (I'll handle it later)
-3. Discard this work
-
-Which option?
-```
-
-**Don't add explanation** - keep options concise.
+Don't add extra explanation unless the user asks.
 
 ### Step 5: Execute Choice
 
-#### Option 1: Merge Locally
+#### Option 1: Publish via jj Bookmark and Push
+
+If no suitable bookmark exists, create one:
 
 ```bash
-# Get main repo root for CWD safety
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
-
-# Merge first — verify success before removing anything
-git checkout <base-branch>
-git pull
-git merge <feature-branch>
-
-# Verify tests on merged result
-<test command>
-
-# Only after merge succeeds: cleanup worktree (Step 6), then delete branch
+jj bookmark create <feature-name>
 ```
 
-Then: Cleanup worktree (Step 6), then delete branch:
+If the bookmark exists but needs to point at the current change:
 
 ```bash
-git branch -d <feature-branch>
+jj bookmark set <feature-name> -r @
 ```
 
-#### Option 2: Push and Create PR
+Push the bookmark:
 
 ```bash
-# Push branch
-git push -u origin <feature-branch>
-
-# Create PR
-gh pr create --title "<title>" --body "$(cat <<'EOF'
-## Summary
-<2-3 bullets of what changed>
-
-## Test Plan
-- [ ] <verification steps>
-EOF
-)"
+jj git push -b <feature-name>
 ```
 
-**Do NOT clean up worktree** — user needs it alive to iterate on PR feedback.
+Then provide a concise PR summary and test plan for the user or hosting tool.
 
-#### Option 3: Keep As-Is
+Do not remove the workspace automatically; PR iteration may need it.
 
-Report: "Keeping branch <name>. Worktree preserved at <path>."
+#### Option 2: Keep As-Is
 
-**Don't cleanup worktree.**
+Report:
+
+```
+Keeping jj workspace at <path>.
+Current change: <rev/description>
+Bookmark: <bookmark or none>
+```
+
+Do not clean up the workspace.
+
+#### Option 3: Squash Into Parent Change
+
+Only do this when the user confirms the current change should be folded into its parent.
+
+```bash
+jj squash
+```
+
+Then verify:
+
+```bash
+jj st
+jj log -r 'ancestors(@, 5)'
+```
+
+Do not remove the workspace automatically.
 
 #### Option 4: Discard
 
-**Confirm first:**
+Confirm first:
+
 ```
-This will permanently delete:
-- Branch <name>
-- All commits: <commit-list>
-- Worktree at <path>
+This will abandon the current jj change and may make workspace changes unrecoverable.
+
+Current change: <rev/description>
+Workspace: <path>
 
 Type 'discard' to confirm.
 ```
@@ -158,94 +150,84 @@ Type 'discard' to confirm.
 Wait for exact confirmation.
 
 If confirmed:
-```bash
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
-```
-
-Then: Cleanup worktree (Step 6), then force-delete branch:
-```bash
-git branch -D <feature-branch>
-```
-
-### Step 6: Cleanup Workspace
-
-**Only runs for Options 1 and 4.** Options 2 and 3 always preserve the worktree.
 
 ```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-WORKTREE_PATH=$(git rev-parse --show-toplevel)
+jj abandon @
 ```
 
-**If `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
+Then proceed to Step 6 if this workflow created a dedicated jj workspace that should be removed.
 
-**If worktree path is under `.worktrees/`, `worktrees/`, or `~/.config/superpowers/worktrees/`:** Superpowers created this worktree — we own cleanup.
+### Step 6: Cleanup jj Workspace
+
+Only run cleanup when the user chose discard or explicitly asked to remove the workspace.
+
+List workspaces and identify the current workspace name:
 
 ```bash
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
-git worktree remove "$WORKTREE_PATH"
-git worktree prune  # Self-healing: clean up any stale registrations
+jj workspace list
 ```
 
-**Otherwise:** The host environment (harness) owns this workspace. Do NOT remove it. If your platform provides a workspace-exit tool, use it. Otherwise, leave the workspace in place.
+From another workspace or after moving out of the directory, unregister the workspace:
+
+```bash
+jj workspace forget <workspace-name>
+```
+
+Then remove the directory manually if the user confirmed removal.
+
+If the workspace was created by the harness or you cannot prove this workflow owns it, leave it in place.
 
 ## Quick Reference
 
-| Option | Merge | Push | Keep Worktree | Cleanup Branch |
-|--------|-------|------|---------------|----------------|
-| 1. Merge locally | yes | - | - | yes |
-| 2. Create PR | - | yes | yes | - |
-| 3. Keep as-is | - | - | yes | - |
-| 4. Discard | - | - | - | yes (force) |
+| Option        | Action                                          | Cleanup                        |
+| ------------- | ----------------------------------------------- | ------------------------------ |
+| 1. Publish    | `jj bookmark create/set`, then `jj git push -b` | Preserve workspace             |
+| 2. Keep as-is | Report path/change/bookmark                     | Preserve workspace             |
+| 3. Squash     | `jj squash` after confirmation                  | Preserve workspace             |
+| 4. Discard    | `jj abandon @` after typed confirmation         | Optional `jj workspace forget` |
 
 ## Common Mistakes
 
 **Skipping test verification**
-- **Problem:** Merge broken code, create failing PR
-- **Fix:** Always verify tests before offering options
 
-**Open-ended questions**
-- **Problem:** "What should I do next?" is ambiguous
-- **Fix:** Present exactly 4 structured options (or 3 for detached HEAD)
+- **Problem:** Publish broken code.
+- **Fix:** Always verify tests before offering options.
 
-**Cleaning up worktree for Option 2**
-- **Problem:** Remove worktree user needs for PR iteration
-- **Fix:** Only cleanup for Options 1 and 4
+**Forgetting that jj has no staging area**
 
-**Deleting branch before removing worktree**
-- **Problem:** `git branch -d` fails because worktree still references the branch
-- **Fix:** Merge first, remove worktree, then delete branch
+- **Problem:** Thinking un-staged files are separate from the current change.
+- **Fix:** Treat every file change as part of `@`; use `jj split` or `jj squash` to organize.
 
-**Running git worktree remove from inside the worktree**
-- **Problem:** Command fails silently when CWD is inside the worktree being removed
-- **Fix:** Always `cd` to main repo root before `git worktree remove`
+**Publishing without a bookmark**
 
-**Cleaning up harness-owned worktrees**
-- **Problem:** Removing a worktree the harness created causes phantom state
-- **Fix:** Only clean up worktrees under `.worktrees/`, `worktrees/`, or `~/.config/superpowers/worktrees/`
+- **Problem:** Remote push has no named target for review.
+- **Fix:** Create or set a bookmark before `jj git push -b`.
 
-**No confirmation for discard**
-- **Problem:** Accidentally delete work
-- **Fix:** Require typed "discard" confirmation
+**Deleting workspace directories first**
+
+- **Problem:** Leaves stale jj workspace registrations.
+- **Fix:** Use `jj workspace forget <name>` before removing directories.
+
+**Cleaning up harness-owned workspaces**
+
+- **Problem:** Removing a workspace the harness created causes phantom state.
+- **Fix:** Only clean up a workspace this workflow created or the user explicitly asked to remove.
 
 ## Red Flags
 
 **Never:**
+
 - Proceed with failing tests
-- Merge without verifying tests on result
-- Delete work without confirmation
-- Force-push without explicit request
-- Remove a worktree before confirming merge success
-- Clean up worktrees you didn't create (provenance check)
-- Run `git worktree remove` from inside the worktree
+- Publish without verifying tests
+- Delete or abandon work without typed confirmation
+- Use git branch/worktree commands for jj workflow cleanup
+- Remove a workspace you did not create or cannot identify
 
 **Always:**
+
 - Verify tests before offering options
-- Detect environment before presenting menu
-- Present exactly 4 options (or 3 for detached HEAD)
-- Get typed confirmation for Option 4
-- Clean up worktree for Options 1 & 4 only
-- `cd` to main repo root before worktree removal
-- Run `git worktree prune` after removal
+- Inspect `jj workspace` and `jj st` before presenting the menu
+- Present exactly 4 options
+- Get typed confirmation for discard
+- Preserve the workspace for publish/PR iteration
+- Use `jj workspace forget` before removing a workspace directory
