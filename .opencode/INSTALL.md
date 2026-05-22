@@ -59,7 +59,9 @@ To pin a specific version:
 
 ```json
 {
-  "plugin": ["superpowers@git+https://github.com/aktersnurra/superpowers.git#v5.0.3"]
+  "plugin": [
+    "superpowers@git+https://github.com/aktersnurra/superpowers.git#v5.0.3"
+  ]
 }
 ```
 
@@ -99,6 +101,7 @@ Then use the installed package path in `opencode.json`:
 ### Tool mapping
 
 When skills reference Claude Code tools:
+
 - `TodoWrite` → `todowrite`
 - `Task` with subagents → `@mention` syntax
 - `Skill` tool → OpenCode's native `skill` tool

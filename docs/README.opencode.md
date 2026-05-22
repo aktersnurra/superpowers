@@ -91,7 +91,9 @@ To pin a specific version, use a branch or tag:
 
 ```json
 {
-  "plugin": ["superpowers@git+https://github.com/aktersnurra/superpowers.git#v5.0.3"]
+  "plugin": [
+    "superpowers@git+https://github.com/aktersnurra/superpowers.git#v5.0.3"
+  ]
 }
 ```
 
