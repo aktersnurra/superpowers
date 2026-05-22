@@ -58,12 +58,10 @@ Data flows from the frontend to the backend.
 Tests will be written to cover the main functionality.
 EOF
 
-# Initialize git repo
-git init --quiet
-git config user.email "test@test.com"
-git config user.name "Test User"
-git add .
-git commit -m "Initial commit with test spec" --quiet
+# Initialize jj repo
+jj git init --colocate . >/dev/null
+jj describe -m "Initial commit with test spec" >/dev/null
+jj new >/dev/null
 
 echo ""
 echo "Created test spec with intentional errors:"

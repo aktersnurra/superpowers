@@ -137,8 +137,8 @@ Expected: All tests pass (handshake, encoding, decoding, boundaries, edge cases)
 - [ ] **Step 6: Commit**
 
 ```bash
-git add skills/brainstorming/scripts/server.js
-git commit -m "Add WebSocket protocol layer for zero-dep brainstorm server"
+jj describe -m "Add WebSocket protocol layer for zero-dep brainstorm server"
+jj new
 ```
 
 ---
@@ -394,8 +394,8 @@ Expected: All tests pass
 - [ ] **Step 8: Commit**
 
 ```bash
-git add skills/brainstorming/scripts/server.js
-git commit -m "Add HTTP server, WebSocket handling, and file watching to server.js"
+jj describe -m "Add HTTP server, WebSocket handling, and file watching to server.js"
+jj new
 ```
 
 ---
@@ -441,8 +441,8 @@ Expected: All tests pass
 - [ ] **Step 5: Commit**
 
 ```bash
-git add skills/brainstorming/scripts/ .gitignore
-git commit -m "Remove vendored node_modules, swap to zero-dep server.js"
+jj describe -m "Remove vendored node_modules, swap to zero-dep server.js"
+jj new
 ```
 
 ### Task 4: Manual smoke test

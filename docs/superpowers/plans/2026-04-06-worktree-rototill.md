@@ -188,11 +188,11 @@ If FAIL: Document rationalizations verbatim. Add explicit counters to Step 1a te
 - [ ] **Step 6: Commit test script**
 
 ```bash
-git add tests/claude-code/test-worktree-native-preference.sh
-git commit -m "test: add RED/GREEN validation for native worktree preference (PRI-974)
+jj describe -m "test: add RED/GREEN validation for native workspace preference (PRI-974)
 
-Gate test for Step 1a — validates agents prefer EnterWorktree over
-git worktree add on Claude Code. Must pass before skill rewrite."
+Gate test for Step 1a — validates agents prefer jj workspaces on Claude Code.
+Must pass before skill rewrite."
+jj new
 ```
 
 ---
@@ -458,15 +458,14 @@ Expected: Approximately 200-220 lines. Scan for any markdown formatting issues.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add skills/using-git-worktrees/SKILL.md
-git commit -m "feat: rewrite using-git-worktrees with detect-and-defer (PRI-974)
+jj describe -m "feat: rewrite using-git-worktrees with detect-and-defer (PRI-974)
 
-Step 0: GIT_DIR != GIT_COMMON detection (skip if already isolated)
-Step 0 consent: opt-in prompt before creating worktree (#991)
-Step 1a: native tool preference (short, first, declarative)
-Step 1b: git worktree fallback with hooks symlink and legacy path compat
-Submodule guard prevents false detection
+Step 0: jj workspace detection (skip if already isolated)
+Step 0 consent: opt-in prompt before creating workspace (#991)
+Step 1a: native jj workspace preference (short, first, declarative)
+Step 1b: legacy path compatibility
 Platform-neutral instruction file references (#1049)"
+jj new
 ```
 
 ---
@@ -752,16 +751,14 @@ Expected: Approximately 210-230 lines.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add skills/finishing-a-development-branch/SKILL.md
-git commit -m "feat: rewrite finishing-a-development-branch with detect-and-defer (PRI-974)
+jj describe -m "feat: rewrite finishing-a-development-branch with detect-and-defer (PRI-974)
 
-Step 2: environment detection (GIT_DIR != GIT_COMMON) before presenting menu
-Detached HEAD: reduced 3-option menu (no merge from detached HEAD)
-Provenance-based cleanup: .worktrees/ = ours, anything else = hands off
-Bug #940: Option 2 no longer cleans up worktree
-Bug #999: merge -> verify -> remove worktree -> delete branch
-Bug #238: cd to main repo root before git worktree remove
-Stale worktree pruning after removal (git worktree prune)"
+Step 2: workspace detection before presenting menu
+Detached HEAD: reduced 3-option menu
+Provenance-based cleanup: only remove workspaces this workflow owns
+Bug #940: Option 2 no longer cleans up workspace
+Bug #999: publish -> verify -> cleanup ordering"
+jj new
 ```
 
 ---
@@ -820,12 +817,12 @@ to:
 - [ ] **Step 4: Commit all three**
 
 ```bash
-git add skills/executing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/writing-plans/SKILL.md
-git commit -m "fix: update worktree integration references across skills (PRI-974)
+jj describe -m "fix: update workspace integration references across skills (PRI-974)
 
 Remove REQUIRED language from executing-plans and subagent-driven-development.
-Consent and detection now live inside using-git-worktrees itself.
+Consent and detection now live inside using-jj-workspaces itself.
 Fix stale 'created by brainstorming' claim in writing-plans."
+jj new
 ```
 
 ---
@@ -863,7 +860,7 @@ Read `skills/using-git-worktrees/SKILL.md` and `skills/finishing-a-development-b
 
 - [ ] **Step 4: Verify git status is clean**
 
-Run: `git status`
+Run: `jj st`
 
 Expected: Clean working tree. All changes committed across Tasks 1-4.
 
@@ -872,8 +869,8 @@ Expected: Clean working tree. All changes committed across Tasks 1-4.
 If manual verification found issues, fix them and commit:
 
 ```bash
-git add -A
-git commit -m "fix: address review findings in worktree skill rewrite (PRI-974)"
+jj describe -m "fix: address review findings in worktree skill rewrite (PRI-974)"
+jj new
 ```
 
 If no issues found, skip this step.

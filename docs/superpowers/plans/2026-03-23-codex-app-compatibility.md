@@ -73,11 +73,11 @@ Read the file again. Confirm:
 - [ ] **Step 4: Commit**
 
 ```bash
-git add skills/using-git-worktrees/SKILL.md
-git commit -m "feat(using-git-worktrees): add Step 0 environment detection (PRI-823)
+jj describe -m "feat(using-git-worktrees): add Step 0 environment detection (PRI-823)
 
 Skip worktree creation when already in a linked worktree. Includes
-sandbox fallback for permission errors on git worktree add."
+sandbox fallback for permission errors on jj workspace add."
+jj new
 ```
 
 ---
@@ -112,10 +112,10 @@ Read the Integration section. Confirm all three entries are updated, "Pairs with
 - [ ] **Step 3: Commit**
 
 ```bash
-git add skills/using-git-worktrees/SKILL.md
-git commit -m "docs(using-git-worktrees): update Integration descriptions (PRI-823)
+jj describe -m "docs(using-git-worktrees): update Integration descriptions (PRI-823)
 
 Clarify that skill ensures a workspace exists, not that it always creates one."
+jj new
 ```
 
 ---
@@ -190,11 +190,11 @@ Read the file again. Confirm:
 - [ ] **Step 4: Commit**
 
 ```bash
-git add skills/finishing-a-development-branch/SKILL.md
-git commit -m "feat(finishing-a-development-branch): add Step 1.5 environment detection (PRI-823)
+jj describe -m "feat(finishing-a-development-branch): add Step 1.5 environment detection (PRI-823)
 
-Detect externally managed worktrees with detached HEAD and emit handoff
-payload instead of 4-option menu. Includes commit SHA and data loss warning."
+Detect externally managed workspaces with detached HEAD and emit handoff
+payload instead of 4-option menu. Includes change id and data loss warning."
+jj new
 ```
 
 ---
@@ -269,12 +269,12 @@ Read Step 5. Confirm:
 - [ ] **Step 4: Commit**
 
 ```bash
-git add skills/finishing-a-development-branch/SKILL.md
-git commit -m "feat(finishing-a-development-branch): add Step 5 cleanup guard (PRI-823)
+jj describe -m "feat(finishing-a-development-branch): add Step 5 cleanup guard (PRI-823)
 
-Re-detect externally managed worktree at cleanup time and skip removal.
+Re-detect externally managed workspace at cleanup time and skip removal.
 Also fixes pre-existing inconsistency: cleanup now correctly says
 Options 1 and 4 only, matching Quick Reference and Common Mistakes."
+jj new
 ```
 
 ---
@@ -314,11 +314,11 @@ Read line 268 of `skills/subagent-driven-development/SKILL.md` and line 68 of `s
 - [ ] **Step 4: Commit**
 
 ```bash
-git add skills/subagent-driven-development/SKILL.md skills/executing-plans/SKILL.md
-git commit -m "docs(sdd, executing-plans): update worktree Integration descriptions (PRI-823)
+jj describe -m "docs(sdd, executing-plans): update workspace Integration descriptions (PRI-823)
 
-Clarify that using-git-worktrees ensures a workspace exists rather than
+Clarify that using-jj-workspaces ensures a workspace exists rather than
 always creating one."
+jj new
 ```
 
 ---
@@ -378,11 +378,11 @@ Read the full file. Confirm:
 - [ ] **Step 4: Commit**
 
 ```bash
-git add skills/using-superpowers/references/codex-tools.md
-git commit -m "docs(codex-tools): add environment detection and App finishing docs (PRI-823)
+jj describe -m "docs(codex-tools): add environment detection and App finishing docs (PRI-823)
 
-Document the git-dir vs git-common-dir detection pattern and the Codex
+Document the jj workspace detection pattern and the Codex
 App's native finishing flow for skills that need to adapt."
+jj new
 ```
 
 ---
@@ -434,7 +434,7 @@ echo "=== Test 1: Normal repo detection ==="
 cd "$TEMP_DIR"
 git init test-repo > /dev/null 2>&1
 cd test-repo
-git commit --allow-empty -m "init" > /dev/null 2>&1
+jj describe -m "init" > /dev/null 2>&1
 result=$(detect_worktree)
 if [ "$result" = "normal" ]; then
   log_pass "Normal repo detected as normal"
@@ -511,11 +511,11 @@ Expected output: 6 passed, 0 failed.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add tests/codex-app-compat/test-environment-detection.sh
-git commit -m "test: add environment detection tests for Codex App compat (PRI-823)
+jj describe -m "test: add environment detection tests for Codex App compat (PRI-823)
 
-Tests git-dir vs git-common-dir comparison in normal repo, linked
-worktree, detached HEAD, and cleanup guard scenarios."
+Tests jj workspace detection in normal repo, linked
+workspace, detached HEAD, and cleanup guard scenarios."
+jj new
 ```
 
 ---

@@ -104,12 +104,10 @@ export function multiply(a, b) {
 **Verification:** `npm test`
 EOF
 
-# Initialize git repo
-git init --quiet
-git config user.email "test@test.com"
-git config user.name "Test User"
-git add .
-git commit -m "Initial commit" --quiet
+# Initialize jj repo
+jj git init --colocate . >/dev/null
+jj describe -m "Initial commit" >/dev/null
+jj new >/dev/null
 
 echo ""
 echo "Project setup complete. Starting execution..."

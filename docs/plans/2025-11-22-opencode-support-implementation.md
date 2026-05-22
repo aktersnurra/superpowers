@@ -88,8 +88,8 @@ Expected: File exists
 **Step 3: Commit**
 
 ```bash
-git add lib/skills-core.js
-git commit -m "feat: create shared skills core module with frontmatter parser"
+jj describe -m "feat: create shared skills core module with frontmatter parser"
+jj new
 ```
 
 ---
@@ -170,8 +170,8 @@ Expected: No output (success)
 **Step 4: Commit**
 
 ```bash
-git add lib/skills-core.js
-git commit -m "feat: add skill discovery function to core module"
+jj describe -m "feat: add skill discovery function to core module"
+jj new
 ```
 
 ---
@@ -249,8 +249,8 @@ Expected: No output
 **Step 4: Commit**
 
 ```bash
-git add lib/skills-core.js
-git commit -m "feat: add skill path resolution with shadowing support"
+jj describe -m "feat: add skill path resolution with shadowing support"
+jj new
 ```
 
 ---
@@ -322,8 +322,8 @@ Expected: No output
 **Step 4: Commit**
 
 ```bash
-git add lib/skills-core.js
-git commit -m "feat: add git update checking to core module"
+jj describe -m "feat: add Git-backed update checking to core module"
+jj new
 ```
 
 ---
@@ -351,8 +351,8 @@ Expected: No output
 **Step 3: Commit**
 
 ```bash
-git add .codex/superpowers-codex
-git commit -m "refactor: import shared skills core in codex"
+jj describe -m "refactor: import shared skills core in codex"
+jj new
 ```
 
 ---
@@ -380,8 +380,8 @@ Expected: Shows list of skills
 **Step 4: Commit**
 
 ```bash
-git add .codex/superpowers-codex
-git commit -m "refactor: use shared extractFrontmatter in codex"
+jj describe -m "refactor: use shared extractFrontmatter in codex"
+jj new
 ```
 
 ---
@@ -407,8 +407,8 @@ Expected: Shows list of skills
 **Step 4: Commit**
 
 ```bash
-git add .codex/superpowers-codex
-git commit -m "refactor: use shared findSkillsInDir in codex"
+jj describe -m "refactor: use shared findSkillsInDir in codex"
+jj new
 ```
 
 ---
@@ -434,8 +434,8 @@ Expected: Shows bootstrap content
 **Step 4: Commit**
 
 ```bash
-git add .codex/superpowers-codex
-git commit -m "refactor: use shared checkForUpdates in codex"
+jj describe -m "refactor: use shared checkForUpdates in codex"
+jj new
 ```
 
 ---
@@ -490,8 +490,8 @@ Expected: File exists
 **Step 4: Commit**
 
 ```bash
-git add .opencode/plugin/superpowers.js
-git commit -m "feat: create opencode plugin scaffold"
+jj describe -m "feat: create opencode plugin scaffold"
+jj new
 ```
 
 ---
@@ -580,8 +580,8 @@ Expected: No output
 **Step 3: Commit**
 
 ```bash
-git add .opencode/plugin/superpowers.js
-git commit -m "feat: implement use_skill tool for opencode"
+jj describe -m "feat: implement use_skill tool for opencode"
+jj new
 ```
 
 ---
@@ -646,8 +646,8 @@ Expected: No output
 **Step 3: Commit**
 
 ```bash
-git add .opencode/plugin/superpowers.js
-git commit -m "feat: implement find_skills tool for opencode"
+jj describe -m "feat: implement find_skills tool for opencode"
+jj new
 ```
 
 ---
@@ -749,8 +749,8 @@ Expected: No output
 **Step 3: Commit**
 
 ```bash
-git add .opencode/plugin/superpowers.js
-git commit -m "feat: implement session.started hook for opencode"
+jj describe -m "feat: implement session.started hook for opencode"
+jj new
 ```
 
 ---
@@ -890,8 +890,8 @@ Expected: File exists
 **Step 3: Commit**
 
 ```bash
-git add .opencode/INSTALL.md
-git commit -m "docs: add opencode installation guide"
+jj describe -m "docs: add opencode installation guide"
+jj new
 ```
 
 ---
@@ -927,8 +927,8 @@ Expected: Shows the section you added
 **Step 3: Commit**
 
 ```bash
-git add README.md
-git commit -m "docs: add opencode support to readme"
+jj describe -m "docs: add opencode support to readme"
+jj new
 ```
 
 ---
@@ -971,8 +971,8 @@ Expected: Shows your new section
 **Step 3: Commit**
 
 ```bash
-git add RELEASE-NOTES.md
-git commit -m "docs: add opencode support to release notes"
+jj describe -m "docs: add opencode support to release notes"
+jj new
 ```
 
 ---
@@ -1041,16 +1041,16 @@ No commit needed - this is verification only.
 ### Task 18: Final Commit and Summary
 
 **Files:**
-- Check: `git status`
+- Check: `jj st`
 
-**Step 1: Check git status**
+**Step 1: Check jj status**
 
-Run: `git status`
-Expected: Working tree clean, all changes committed
+Run: `jj st`
+Expected: Working copy clean, all changes described
 
-**Step 2: Review commit log**
+**Step 2: Review change log**
 
-Run: `git log --oneline -20`
+Run: `jj log -r 'ancestors(@, 20)'`
 Expected: Shows all commits from this implementation
 
 **Step 3: Create summary document**

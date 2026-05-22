@@ -134,8 +134,8 @@ Expected: See JSON with `server-started` and port info
 **Step 5: Commit**
 
 ```bash
-git add lib/brainstorm-server/
-git commit -m "feat: add brainstorm server foundation"
+jj describe -m "feat: add brainstorm server foundation"
+jj new
 ```
 
 ---
@@ -255,8 +255,8 @@ Expected: No syntax errors
 **Step 3: Commit**
 
 ```bash
-git add lib/brainstorm-server/helper.js
-git commit -m "feat: add browser helper library for event capture"
+jj describe -m "feat: add browser helper library for event capture"
+jj new
 ```
 
 ---
@@ -398,8 +398,8 @@ Expected: All tests pass
 **Step 4: Commit**
 
 ```bash
-git add tests/brainstorm-server/
-git commit -m "test: add brainstorm server integration tests"
+jj describe -m "test: add brainstorm server integration tests"
+jj new
 ```
 
 ---
@@ -524,8 +524,8 @@ Expected: Shows the new section
 **Step 4: Commit**
 
 ```bash
-git add skills/brainstorming/
-git commit -m "feat: add visual companion to brainstorming skill"
+jj describe -m "feat: add visual companion to brainstorming skill"
+jj new
 ```
 
 ---
@@ -549,8 +549,8 @@ lib/brainstorm-server/node_modules/
 **Step 3: Commit if changed**
 
 ```bash
-git add .gitignore
-git commit -m "chore: ignore brainstorm-server node_modules"
+jj describe -m "chore: ignore brainstorm-server node_modules"
+jj new
 ```
 
 ---

@@ -46,12 +46,10 @@ cat > package.json <<'EOF'
 { "name": "test-codereview", "version": "1.0.0", "type": "module" }
 EOF
 
-git init --quiet
-git config user.email "test@test.com"
-git config user.name "Test User"
-git add .
-git commit -m "Initial: parameterized findUserByEmail" --quiet
-BASE_SHA=$(git rev-parse HEAD)
+jj git init --colocate . >/dev/null
+jj describe -m "Initial: parameterized findUserByEmail" >/dev/null
+BASE_SHA=$(jj log -r @ --no-graph -T 'commit_id.short()')
+jj new >/dev/null
 
 # Second commit: plant two real bugs
 # 1. SQL injection — switch from parameterized to string concatenation
@@ -79,9 +77,8 @@ export async function login(email, password) {
 function hash(s) { return s; }
 EOF
 
-git add .
-git commit -m "Refactor user lookup, add login" --quiet
-HEAD_SHA=$(git rev-parse HEAD)
+jj describe -m "Refactor user lookup, add login" >/dev/null
+HEAD_SHA=$(jj log -r @ --no-graph -T 'commit_id.short()')
 
 echo ""
 echo "Planted bugs in $BASE_SHA..$HEAD_SHA:"

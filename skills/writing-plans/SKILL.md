@@ -101,8 +101,8 @@ Expected: PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add tests/path/test.py src/path/file.py
-git commit -m "feat: add specific feature"
+jj describe -m "feat: add specific feature"
+jj new
 ```
 ````
 
