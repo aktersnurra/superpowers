@@ -4,7 +4,7 @@ Superpowers is a complete software development methodology for your coding agent
 
 ## Quickstart
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Codex CLI](#codex-cli), [Codex App](#codex-app), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [OpenCode](#opencode), [Cursor](#cursor), [GitHub Copilot CLI](#github-copilot-cli).
+Give your agent Superpowers: [Claude Code](#claude-code), [Codex CLI](#codex-cli), [Codex App](#codex-app), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [OpenCode](#opencode), [Pi](#pi), [GitHub Copilot CLI](#github-copilot-cli).
 
 ## How it works
 
@@ -125,15 +125,19 @@ already use it in another harness.
 
 - Detailed docs: [docs/README.opencode.md](docs/README.opencode.md)
 
-### Cursor
+### Pi
 
-- In Cursor Agent chat, install from marketplace:
+- Install the package globally:
 
-  ```text
-  /add-plugin superpowers
+  ```bash
+  pi install https://github.com/aktersnurra/superpowers
   ```
 
-- Or search for "superpowers" in the plugin marketplace.
+- Or install it for the current project:
+
+  ```bash
+  pi install -l https://github.com/aktersnurra/superpowers
+  ```
 
 ### GitHub Copilot CLI
 
