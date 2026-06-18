@@ -44,20 +44,21 @@ cell by `cell_id`; it is not the spawned-agent result tool.
 
 ## Environment Detection
 
-Skills that create worktrees or finish branches should detect their
-environment with read-only git commands before proceeding:
+Skills that create isolated workspaces or finish work should inspect jj state
+with read-only commands before proceeding:
 
 ```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-BRANCH=$(git branch --show-current)
+jj workspace root
+jj workspace list
+jj st
 ```
 
-- `GIT_DIR != GIT_COMMON` → already in a linked worktree (skip creation)
-- `BRANCH` empty → detached HEAD (cannot branch/push/PR from sandbox)
+- An existing purpose-specific jj workspace can be reused.
+- A clean root/default workspace should use `jj workspace add` for isolation before feature work.
+- `jj st` shows whether the current working-copy commit has changes or conflicts.
 
-See `using-git-worktrees` Step 0 and `finishing-a-development-branch`
-Step 1 for how each skill uses these signals.
+See `using-jj-workspaces` Step 0 and `finishing-a-development-branch`
+Step 2 for how each skill uses these signals.
 
 ## Codex App Finishing
 

@@ -81,8 +81,8 @@ Expected: Shows the header and purpose section
 - [ ] **Step 3:** Commit
 
 ```bash
-git add skills/brainstorming/spec-document-reviewer-prompt.md
-git commit -m "feat: add spec document reviewer prompt template"
+jj describe -m "feat: add spec document reviewer prompt template"
+jj new
 ```
 
 ---
@@ -124,8 +124,8 @@ Expected: Shows the new review loop section
 - [ ] **Step 4:** Commit
 
 ```bash
-git add skills/brainstorming/SKILL.md
-git commit -m "feat: add spec review loop to brainstorming skill"
+jj describe -m "feat: add spec review loop to brainstorming skill"
+jj new
 ```
 
 ---
@@ -201,8 +201,8 @@ Expected: Shows the header and purpose section
 - [ ] **Step 3:** Commit
 
 ```bash
-git add skills/writing-plans/plan-document-reviewer-prompt.md
-git commit -m "feat: add plan document reviewer prompt template"
+jj describe -m "feat: add plan document reviewer prompt template"
+jj new
 ```
 
 ---
@@ -261,8 +261,8 @@ Expected: Shows checkbox syntax `### Task N:`
 - [ ] **Step 6:** Commit
 
 ```bash
-git add skills/writing-plans/SKILL.md
-git commit -m "feat: add plan review loop and checkbox syntax to writing-plans skill"
+jj describe -m "feat: add plan review loop and checkbox syntax to writing-plans skill"
+jj new
 ```
 
 ---
@@ -296,6 +296,6 @@ Expected: Shows updated header with checkbox syntax mention
 - [ ] **Step 4:** Commit
 
 ```bash
-git add skills/writing-plans/SKILL.md
-git commit -m "docs: update plan header to reference checkbox syntax"
+jj describe -m "docs: update plan header to reference checkbox syntax"
+jj new
 ```

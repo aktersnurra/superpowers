@@ -8,7 +8,7 @@ Add superpowers to the `plugin` array in your `opencode.json` (global or project
 
 ```json
 {
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]
+  "plugin": ["superpowers@git+https://github.com/aktersnurra/superpowers.git"]
 }
 ```
 
@@ -17,7 +17,7 @@ registers all skills.
 
 Verify by asking: "Tell me about your superpowers"
 
-OpenCode uses its own plugin install. If you also use Claude Code, Codex, or
+OpenCode uses its own plugin install. If you also use Claude Code, Pi, or
 another harness, install Superpowers separately for each one.
 
 ### Migrating from the old symlink-based install
@@ -91,7 +91,9 @@ To pin a specific version, use a branch or tag:
 
 ```json
 {
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git#v5.0.3"]
+  "plugin": [
+    "superpowers@git+https://github.com/aktersnurra/superpowers.git#v5.0.3"
+  ]
 }
 ```
 
@@ -134,7 +136,7 @@ the plugin, try installing with system npm and pointing OpenCode at the local
 package:
 
 ```powershell
-npm install superpowers@git+https://github.com/obra/superpowers.git --prefix "$HOME\.config\opencode"
+npm install superpowers@git+https://github.com/aktersnurra/superpowers.git --prefix "$HOME\.config\opencode"
 ```
 
 Then use the installed package path in `opencode.json`:
@@ -158,6 +160,6 @@ Then use the installed package path in `opencode.json`:
 
 ## Getting Help
 
-- Report issues: https://github.com/obra/superpowers/issues
-- Main documentation: https://github.com/obra/superpowers
+- Report issues: https://github.com/aktersnurra/superpowers/issues
+- Main documentation: https://github.com/aktersnurra/superpowers
 - OpenCode docs: https://opencode.ai/docs/

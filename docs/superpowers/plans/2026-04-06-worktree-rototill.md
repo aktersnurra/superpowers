@@ -188,11 +188,11 @@ If FAIL: Document rationalizations verbatim. Add explicit counters to Step 1a te
 - [ ] **Step 6: Commit test script**
 
 ```bash
-git add tests/claude-code/test-worktree-native-preference.sh
-git commit -m "test: add RED/GREEN validation for native worktree preference (PRI-974)
+jj describe -m "test: add RED/GREEN validation for native workspace preference (PRI-974)
 
-Gate test for Step 1a — validates agents prefer EnterWorktree over
-git worktree add on Claude Code. Must pass before skill rewrite."
+Gate test for Step 1a — validates agents prefer jj workspaces on Claude Code.
+Must pass before skill rewrite."
+jj new
 ```
 
 ---
@@ -275,16 +275,23 @@ If no native tool is available, create a worktree manually using git.
 
 Follow this priority order:
 
-1. **Check your instructions for a worktree directory preference.** If specified, use it without asking.
-
-2. **Check existing project-local directories:**
+1. **Check existing directories:**
    ```bash
    ls -d .worktrees 2>/dev/null     # Preferred (hidden)
    ls -d worktrees 2>/dev/null      # Alternative
    ```
    If found, use that directory. If both exist, `.worktrees` wins.
 
-3. **Default to `.worktrees/`.**
+2. **Check for existing global directory:**
+   ```bash
+   project=$(basename "$(git rev-parse --show-toplevel)")
+   ls -d ~/.config/superpowers/worktrees/$project 2>/dev/null
+   ```
+   If found, use it (backward compatibility with legacy global path).
+
+3. **Check your instructions for a worktree directory preference.** If specified, use it without asking.
+
+4. **Default to `.worktrees/`.**
 
 #### Safety Verification (project-local directories only)
 
@@ -298,11 +305,16 @@ git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/d
 
 **Why critical:** Prevents accidentally committing worktree contents to repository.
 
+Global directories (`~/.config/superpowers/worktrees/`) need no verification.
+
 #### Create the Worktree
 
 ```bash
+project=$(basename "$(git rev-parse --show-toplevel)")
+
 # Determine path based on chosen location
-path="$LOCATION/$BRANCH_NAME"
+# For project-local: path="$LOCATION/$BRANCH_NAME"
+# For global: path="~/.config/superpowers/worktrees/$project/$BRANCH_NAME"
 
 git worktree add "$path" -b "$BRANCH_NAME"
 cd "$path"
@@ -375,6 +387,7 @@ Ready to implement <feature-name>
 | `worktrees/` exists | Use it (verify ignored) |
 | Both exist | Use `.worktrees/` |
 | Neither exists | Check instruction file, then default `.worktrees/` |
+| Global path exists | Use it (backward compat) |
 | Directory not ignored | Add to .gitignore + commit |
 | Permission error on create | Sandbox fallback, work in place |
 | Tests fail during baseline | Report failures + ask |
@@ -445,15 +458,14 @@ Expected: Approximately 200-220 lines. Scan for any markdown formatting issues.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add skills/using-git-worktrees/SKILL.md
-git commit -m "feat: rewrite using-git-worktrees with detect-and-defer (PRI-974)
+jj describe -m "feat: rewrite using-git-worktrees with detect-and-defer (PRI-974)
 
-Step 0: GIT_DIR != GIT_COMMON detection (skip if already isolated)
-Step 0 consent: opt-in prompt before creating worktree (#991)
-Step 1a: native tool preference (short, first, declarative)
-Step 1b: git worktree fallback with project-local directory policy
-Submodule guard prevents false detection
+Step 0: jj workspace detection (skip if already isolated)
+Step 0 consent: opt-in prompt before creating workspace (#991)
+Step 1a: native jj workspace preference (short, first, declarative)
+Step 1b: legacy path compatibility
 Platform-neutral instruction file references (#1049)"
+jj new
 ```
 
 ---
@@ -650,7 +662,7 @@ WORKTREE_PATH=$(git rev-parse --show-toplevel)
 
 **If `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
 
-**If worktree path is under `.worktrees/` or `worktrees/`:** Superpowers created this worktree — we own cleanup.
+**If worktree path is under `.worktrees/` or `~/.config/superpowers/worktrees/`:** Superpowers created this worktree — we own cleanup.
 
 ```bash
 MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
@@ -694,7 +706,7 @@ git worktree prune  # Self-healing: clean up any stale registrations
 
 **Cleaning up harness-owned worktrees**
 - **Problem:** Removing a worktree the harness created causes phantom state
-- **Fix:** Only clean up worktrees under `.worktrees/` or `worktrees/`
+- **Fix:** Only clean up worktrees under `.worktrees/` or `~/.config/superpowers/worktrees/`
 
 **No confirmation for discard**
 - **Problem:** Accidentally delete work
@@ -739,16 +751,14 @@ Expected: Approximately 210-230 lines.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add skills/finishing-a-development-branch/SKILL.md
-git commit -m "feat: rewrite finishing-a-development-branch with detect-and-defer (PRI-974)
+jj describe -m "feat: rewrite finishing-a-development-branch with detect-and-defer (PRI-974)
 
-Step 2: environment detection (GIT_DIR != GIT_COMMON) before presenting menu
-Detached HEAD: reduced 3-option menu (no merge from detached HEAD)
-Provenance-based cleanup: .worktrees/ = ours, anything else = hands off
-Bug #940: Option 2 no longer cleans up worktree
-Bug #999: merge -> verify -> remove worktree -> delete branch
-Bug #238: cd to main repo root before git worktree remove
-Stale worktree pruning after removal (git worktree prune)"
+Step 2: workspace detection before presenting menu
+Detached HEAD: reduced 3-option menu
+Provenance-based cleanup: only remove workspaces this workflow owns
+Bug #940: Option 2 no longer cleans up workspace
+Bug #999: publish -> verify -> cleanup ordering"
+jj new
 ```
 
 ---
@@ -807,12 +817,12 @@ to:
 - [ ] **Step 4: Commit all three**
 
 ```bash
-git add skills/executing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/writing-plans/SKILL.md
-git commit -m "fix: update worktree integration references across skills (PRI-974)
+jj describe -m "fix: update workspace integration references across skills (PRI-974)
 
 Remove REQUIRED language from executing-plans and subagent-driven-development.
-Consent and detection now live inside using-git-worktrees itself.
+Consent and detection now live inside using-jj-workspaces itself.
 Fix stale 'created by brainstorming' claim in writing-plans."
+jj new
 ```
 
 ---
@@ -850,7 +860,7 @@ Read `skills/using-git-worktrees/SKILL.md` and `skills/finishing-a-development-b
 
 - [ ] **Step 4: Verify git status is clean**
 
-Run: `git status`
+Run: `jj st`
 
 Expected: Clean working tree. All changes committed across Tasks 1-4.
 
@@ -859,8 +869,8 @@ Expected: Clean working tree. All changes committed across Tasks 1-4.
 If manual verification found issues, fix them and commit:
 
 ```bash
-git add -A
-git commit -m "fix: address review findings in worktree skill rewrite (PRI-974)"
+jj describe -m "fix: address review findings in worktree skill rewrite (PRI-974)"
+jj new
 ```
 
 If no issues found, skip this step.

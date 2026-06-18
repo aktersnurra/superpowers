@@ -85,8 +85,8 @@ Expected: Tests 1-5 should still pass. Tests 6-8 may fail (expected — they ass
 - [ ] **Step 4: Commit**
 
 ```bash
-git add lib/brainstorm-server/frame-template.html
-git commit -m "Replace feedback footer with selection indicator bar in brainstorm template"
+jj describe -m "Replace feedback footer with selection indicator bar in brainstorm template"
+jj new
 ```
 
 ---
@@ -193,8 +193,8 @@ Expected: New `.events` tests PASS. Existing tests may still have failures from 
 - [ ] **Step 8: Commit**
 
 ```bash
-git add lib/brainstorm-server/index.js tests/brainstorm-server/server.test.js
-git commit -m "Add .events file writing and comment-based content injection to brainstorm server"
+jj describe -m "Add .events file writing and comment-based content injection to brainstorm server"
+jj new
 ```
 
 ---
@@ -272,8 +272,8 @@ cd /Users/drewritter/prime-rad/superpowers && node tests/brainstorm-server/serve
 - [ ] **Step 9: Commit**
 
 ```bash
-git add lib/brainstorm-server/helper.js
-git commit -m "Simplify helper.js: remove feedback functions, narrow to choice capture + indicator"
+jj describe -m "Simplify helper.js: remove feedback functions, narrow to choice capture + indicator"
+jj new
 ```
 
 ---
@@ -345,8 +345,8 @@ Expected: ALL tests PASS.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add tests/brainstorm-server/server.test.js
-git commit -m "Update brainstorm server tests for new template structure and helper.js API"
+jj describe -m "Update brainstorm server tests for new template structure and helper.js API"
+jj new
 ```
 
 ---
@@ -381,8 +381,8 @@ Expected: All tests PASS (no test referenced this file).
 - [ ] **Step 4: Commit**
 
 ```bash
-git add -u lib/brainstorm-server/wait-for-feedback.sh
-git commit -m "Delete wait-for-feedback.sh: replaced by .events file"
+jj describe -m "Delete wait-for-feedback.sh: replaced by .events file"
+jj new
 ```
 
 ---
@@ -478,8 +478,8 @@ Remove the helper.js reference description about "JS API" — the API is now min
 - [ ] **Step 7: Commit**
 
 ```bash
-git add skills/brainstorming/visual-companion.md
-git commit -m "Rewrite visual-companion.md for non-blocking browser-displays-terminal-commands flow"
+jj describe -m "Rewrite visual-companion.md for non-blocking browser-displays-terminal-commands flow"
+jj new
 ```
 
 ---
@@ -518,6 +518,6 @@ Expected: No hits outside of release notes and the spec/plan docs (which are his
 - [ ] **Step 4: Final commit if any cleanup needed**
 
 ```bash
-git status
+jj st
 # Review untracked/modified files, stage specific files as needed, commit if clean
 ```

@@ -115,12 +115,10 @@ Full workflow execution test (~10-30 minutes):
 - Subagents follow the skill correctly
 - Final code is functional and tested
 
-#### test-worktree-native-preference.sh
-RED-GREEN-REFACTOR validation for the using-git-worktrees skill (~5 minutes):
-- RED: skill without Step 1a — agent should use `git worktree add`
-- GREEN: skill with Step 1a — agent should use the native EnterWorktree tool
-- PRESSURE: same as GREEN under urgency framing with pre-existing `.worktrees/`
-- Drill scenario `worktree-creation-under-pressure.yaml` covers the PRESSURE phase only
+#### test-jj-workspace-preference.sh
+RED-GREEN-REFACTOR validation for the using-jj-workspaces skill (~5 minutes):
+- GREEN: agent should use `jj workspace add` for isolation
+- PRESSURE: same as GREEN under urgency framing with explicit git-worktree temptation
 
 ## Adding New Tests
 

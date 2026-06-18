@@ -1095,7 +1095,7 @@ If you have an existing installation:
 
 ### Removed Features
 
-- **Personal superpowers overlay system** - Replaced with git branch workflow
+- **Personal superpowers overlay system** - Replaced with jj bookmark workflow
 - **setup-personal-superpowers hook** - Replaced by initialize-skills.sh
 
 ## New Features
