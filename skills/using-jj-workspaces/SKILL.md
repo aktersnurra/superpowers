@@ -29,14 +29,27 @@ If you are already in a purpose-specific jj workspace for this feature, skip to 
 
 If you are in the root/default workspace and starting feature work, create a new workspace in Step 1. Do not use `jj new` as a substitute for workspace isolation when running feature work in parallel.
 
-## Step 1: Create Isolated Workspace
+## Step 1: Create a Workspace When Needed
 
-Create a sibling directory for the feature workspace unless the user provided a different path.
+Use a separate jj workspace only when the task needs an isolated working tree,
+such as parallel agent sessions, long-running tests, or side-by-side feature
+work. For ordinary single-threaded feature work, prefer staying in the current
+checkout and creating a new change with:
+
+```bash
+jj new
+````
+
+When a separate workspace is useful, create it under a dedicated workspace
+container instead of polluting the parent directory with ad-hoc sibling repos.
 
 ```bash
 # From the current repository workspace:
-jj workspace add ../<repo>-<feature-name>
-cd ../<repo>-<feature-name>
+repo="$(basename "$(jj root)")"
+mkdir -p "../${repo}.workspaces"
+
+jj workspace add "../${repo}.workspaces/<feature-name>" --name "<feature-name>"
+cd "../${repo}.workspaces/<feature-name>"
 ```
 
 Then verify:
@@ -44,9 +57,30 @@ Then verify:
 ```bash
 jj workspace root
 jj st
+jj workspace list
 ```
 
-**Sandbox fallback:** If workspace creation fails because the environment blocks writing outside the current directory, tell the user and ask whether to continue in place or choose another workspace path.
+When the workspace is no longer needed, unregister it and remove the directory:
+
+```bash
+jj workspace forget <feature-name>
+rm -rf "../${repo}.workspaces/<feature-name>"
+```
+
+Or, from inside the workspace being removed:
+
+```bash
+jj workspace forget
+cd ..
+rm -rf "<feature-name>"
+```
+
+`jj workspace forget` only removes jj’s registration for the workspace. It does
+not delete the working-tree directory.
+
+**Sandbox fallback:** If workspace creation fails because the environment blocks
+writing outside the current directory, tell the user and continue with `jj new`
+in the current checkout unless the user provides another workspace path.
 
 ## Step 2: Project Setup
 
