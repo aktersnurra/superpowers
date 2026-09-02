@@ -88,6 +88,7 @@ test('startup context injects the bootstrap as one user message until agent_end'
   assert.match(textOf(result.messages[0]), /You have superpowers/);
   assert.match(textOf(result.messages[0]), /Pi tool mapping/);
   assert.doesNotMatch(textOf(result.messages[0]), /pi-skill-catalog-request/);
+  assert.doesNotMatch(textOf(result.messages[0]), /Available Superpowers skills/);
   assert.equal(result.messages[1], originalMessages[0]);
 
   const repeatedProviderRequest = await context({ type: 'context', messages: originalMessages }, {});
@@ -102,7 +103,16 @@ test('startup context injects the bootstrap as one user message until agent_end'
   assert.equal(afterEnd, undefined, 'startup bootstrap should clear after agent_end');
 });
 
-test('manual using-superpowers omits the bootstrap and injects its skill catalog', async () => {
+test('using-superpowers bundles its subskill catalog for manual loading', async () => {
+  const content = await readFile(bootstrapSkillPath, 'utf8');
+
+  assert.match(content, /Available Superpowers skills/);
+  assert.match(content, /\*\*brainstorming\*\*/);
+  assert.match(content, /creative work/);
+  assert.match(content, /\*\*systematic-debugging\*\*/);
+});
+
+test('manual using-superpowers omits the Pi bootstrap', async () => {
   const original = await readFile(bootstrapSkillPath, 'utf8');
   await writeFile(
     bootstrapSkillPath,
@@ -116,19 +126,8 @@ test('manual using-superpowers omits the bootstrap and injects its skill catalog
     const context = firstHandler(handlers, 'context');
     await sessionStart({ type: 'session_start', reason: 'startup' }, {});
 
-    const messages = [{
-      role: 'user',
-      content: [{ type: 'text', text: '<!-- superpowers:pi-skill-catalog-request -->' }],
-      timestamp: 1,
-    }];
-    const result = await context({ type: 'context', messages }, {});
-
-    assert.equal(result.messages.length, 2);
-    assert.equal(result.messages[0], messages[0]);
-    assert.match(textOf(result.messages[1]), /Available Superpowers skills/);
-    assert.match(textOf(result.messages[1]), /brainstorming/);
-    assert.match(textOf(result.messages[1]), /creative work/);
-    assert.equal(await context({ type: 'context', messages: result.messages }, {}), undefined);
+    const messages = [{ role: 'user', content: [{ type: 'text', text: 'Continue' }], timestamp: 1 }];
+    assert.equal(await context({ type: 'context', messages }, {}), undefined);
   } finally {
     await writeFile(bootstrapSkillPath, original, 'utf8');
   }

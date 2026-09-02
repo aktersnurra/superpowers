@@ -1,12 +1,12 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const EXTREMELY_IMPORTANT_MARKER = "<EXTREMELY_IMPORTANT>";
 const BOOTSTRAP_MARKER = "superpowers:using-superpowers bootstrap for pi";
-const CATALOG_REQUEST_MARKER = "superpowers:pi-skill-catalog-request";
-const CATALOG_MARKER = "superpowers:skill-catalog for pi";
+const CATALOG_START_MARKER = "superpowers:pi-skill-catalog:start";
+const CATALOG_END_MARKER = "superpowers:pi-skill-catalog:end";
 
 const extensionDir = dirname(fileURLToPath(import.meta.url));
 const packageRoot = resolve(extensionDir, "../..");
@@ -14,7 +14,6 @@ const skillsDir = resolve(packageRoot, "skills");
 const bootstrapSkillPath = resolve(skillsDir, "using-superpowers", "SKILL.md");
 
 let cachedBootstrap: string | null | undefined;
-let cachedCatalog: string | null | undefined;
 
 export default function superpowersPiExtension(pi: ExtensionAPI) {
 	let injectBootstrap = true;
@@ -36,25 +35,6 @@ export default function superpowersPiExtension(pi: ExtensionAPI) {
 	});
 
 	pi.on("context", async (event) => {
-		const catalogRequestIndex = event.messages.findIndex(messageContainsCatalogRequest);
-		if (catalogRequestIndex >= 0 && !event.messages.some(messageContainsCatalog)) {
-			const catalog = getCatalogContent();
-			if (catalog) {
-				const catalogMessage = {
-					role: "user" as const,
-					content: [{ type: "text" as const, text: catalog }],
-					timestamp: Date.now(),
-				};
-				return {
-					messages: [
-						...event.messages.slice(0, catalogRequestIndex + 1),
-						catalogMessage,
-						...event.messages.slice(catalogRequestIndex + 1),
-					],
-				};
-			}
-		}
-
 		if (!injectBootstrap) return;
 		if (event.messages.some(messageContainsBootstrap)) return;
 
@@ -87,7 +67,7 @@ function getBootstrapContent(): string | null {
 			cachedBootstrap = null;
 			return null;
 		}
-		const body = removeCatalogRequest(stripFrontmatter(skillContent));
+		const body = removeSkillCatalog(stripFrontmatter(skillContent));
 		cachedBootstrap = `${EXTREMELY_IMPORTANT_MARKER}
 ${BOOTSTRAP_MARKER}
 
@@ -106,50 +86,16 @@ ${piToolMapping()}
 	}
 }
 
-function getCatalogContent(): string | null {
-	if (cachedCatalog !== undefined) return cachedCatalog;
-
-	try {
-		const entries = readdirSync(skillsDir, { withFileTypes: true })
-			.filter((entry) => entry.isDirectory() && entry.name !== "using-superpowers")
-			.map((entry) => skillCatalogEntry(resolve(skillsDir, entry.name, "SKILL.md")))
-			.filter((entry): entry is string => entry !== null)
-			.sort();
-		cachedCatalog = `${CATALOG_MARKER}
-
-## Available Superpowers skills
-
-${entries.join("\n")}`;
-		return cachedCatalog;
-	} catch {
-		cachedCatalog = null;
-		return null;
-	}
-}
-
-function skillCatalogEntry(skillPath: string): string | null {
-	const content = readFileSync(skillPath, "utf8");
-	const frontmatter = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
-	if (frontmatter === undefined) return null;
-
-	const name = frontmatterValue(frontmatter, "name");
-	const description = frontmatterValue(frontmatter, "description");
-	if (name === undefined || description === undefined) return null;
-	return `- **${name}** — ${description}`;
-}
-
-function frontmatterValue(frontmatter: string, key: string): string | undefined {
-	const value = frontmatter.match(new RegExp(`^${key}:\\s*(.+?)\\s*$`, "m"))?.[1];
-	return value?.replace(/^(?:"|')|(?:"|')$/g, "");
-}
-
 function disableModelInvocation(content: string): boolean {
 	const frontmatter = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
 	return frontmatter !== undefined && /^disable-model-invocation\s*:\s*true(?:\s+#.*)?\s*$/m.test(frontmatter);
 }
 
-function removeCatalogRequest(content: string): string {
-	return content.replace(`<!-- ${CATALOG_REQUEST_MARKER} -->`, "").trim();
+function removeSkillCatalog(content: string): string {
+	const catalog = new RegExp(
+		`<!-- ${CATALOG_START_MARKER} -->[\\s\\S]*?<!-- ${CATALOG_END_MARKER} -->`,
+	);
+	return content.replace(catalog, "").trim();
 }
 
 function stripFrontmatter(content: string): string {
@@ -171,14 +117,6 @@ Pi does not ship a standard task-list tool. If an installed todo/task tool is av
 
 function messageContainsBootstrap(message: unknown): boolean {
 	return messageContains(message, BOOTSTRAP_MARKER);
-}
-
-function messageContainsCatalogRequest(message: unknown): boolean {
-	return messageContains(message, CATALOG_REQUEST_MARKER);
-}
-
-function messageContainsCatalog(message: unknown): boolean {
-	return messageContains(message, CATALOG_MARKER);
 }
 
 function messageContains(message: unknown, marker: string): boolean {
