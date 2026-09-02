@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -10,6 +10,7 @@ const repoRoot = resolve(__dirname, '../..');
 const packageJsonPath = resolve(repoRoot, 'package.json');
 const extensionPath = resolve(repoRoot, '.pi/extensions/superpowers.ts');
 const piToolsPath = resolve(repoRoot, 'skills/using-superpowers/references/pi-tools.md');
+const bootstrapSkillPath = resolve(repoRoot, 'skills/using-superpowers/SKILL.md');
 
 async function readPackageJson() {
   return JSON.parse(await readFile(packageJsonPath, 'utf8'));
@@ -98,6 +99,27 @@ test('startup context injects the bootstrap as one user message until agent_end'
   await agentEnd({ type: 'agent_end', messages: [] }, {});
   const afterEnd = await context({ type: 'context', messages: originalMessages }, {});
   assert.equal(afterEnd, undefined, 'startup bootstrap should clear after agent_end');
+});
+
+test('manual using-superpowers does not inject the Pi bootstrap', async () => {
+  const original = await readFile(bootstrapSkillPath, 'utf8');
+  await writeFile(
+    bootstrapSkillPath,
+    original.replace(/^---\n/, '---\ndisable-model-invocation: true\n'),
+    'utf8',
+  );
+
+  try {
+    const { handlers } = await loadExtension();
+    const sessionStart = firstHandler(handlers, 'session_start');
+    const context = firstHandler(handlers, 'context');
+    await sessionStart({ type: 'session_start', reason: 'startup' }, {});
+
+    const messages = [{ role: 'user', content: [{ type: 'text', text: 'Continue' }], timestamp: 1 }];
+    assert.equal(await context({ type: 'context', messages }, {}), undefined);
+  } finally {
+    await writeFile(bootstrapSkillPath, original, 'utf8');
+  }
 });
 
 test('session_compact injects bootstrap after compaction summaries, not before compaction', async () => {

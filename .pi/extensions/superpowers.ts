@@ -61,6 +61,10 @@ function getBootstrapContent(): string | null {
 
 	try {
 		const skillContent = readFileSync(bootstrapSkillPath, "utf8");
+		if (disableModelInvocation(skillContent)) {
+			cachedBootstrap = null;
+			return null;
+		}
 		const body = stripFrontmatter(skillContent);
 		cachedBootstrap = `${EXTREMELY_IMPORTANT_MARKER}
 ${BOOTSTRAP_MARKER}
@@ -78,6 +82,11 @@ ${piToolMapping()}
 		cachedBootstrap = null;
 		return null;
 	}
+}
+
+function disableModelInvocation(content: string): boolean {
+	const frontmatter = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/)?.[1];
+	return frontmatter !== undefined && /^disable-model-invocation\s*:\s*true(?:\s+#.*)?\s*$/m.test(frontmatter);
 }
 
 function stripFrontmatter(content: string): string {
