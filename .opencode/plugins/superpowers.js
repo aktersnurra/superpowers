@@ -52,28 +52,22 @@ const normalizePath = (p, homeDir) => {
 // every agent step.  See #1202 for the full analysis.
 let _bootstrapCache = undefined; // undefined = not yet loaded, null = file missing
 
-export const SuperpowersPlugin = async ({ client, directory }) => {
-  const homeDir = os.homedir();
-  const superpowersSkillsDir = path.resolve(__dirname, '../../skills');
-  const envConfigDir = normalizePath(process.env.OPENCODE_CONFIG_DIR, homeDir);
-  const configDir = envConfigDir || path.join(homeDir, '.config/opencode');
+// Helper to generate bootstrap content (cached after first call)
+const getBootstrapContent = (superpowersSkillsDir) => {
+  // Return cached result on subsequent calls
+  if (_bootstrapCache !== undefined) return _bootstrapCache;
 
-  // Helper to generate bootstrap content (cached after first call)
-  const getBootstrapContent = () => {
-    // Return cached result on subsequent calls
-    if (_bootstrapCache !== undefined) return _bootstrapCache;
+  // Try to load using-superpowers skill
+  const skillPath = path.join(superpowersSkillsDir, 'using-superpowers', 'SKILL.md');
+  if (!fs.existsSync(skillPath)) {
+    _bootstrapCache = null;
+    return null;
+  }
 
-    // Try to load using-superpowers skill
-    const skillPath = path.join(superpowersSkillsDir, 'using-superpowers', 'SKILL.md');
-    if (!fs.existsSync(skillPath)) {
-      _bootstrapCache = null;
-      return null;
-    }
+  const fullContent = fs.readFileSync(skillPath, 'utf8');
+  const { content } = extractAndStripFrontmatter(fullContent);
 
-    const fullContent = fs.readFileSync(skillPath, 'utf8');
-    const { content } = extractAndStripFrontmatter(fullContent);
-
-    const toolMapping = `**Tool Mapping for OpenCode:**
+  const toolMapping = `**Tool Mapping for OpenCode:**
 When skills request actions, substitute OpenCode equivalents:
 - Create or update todos → \`todowrite\`
 - \`Subagent (general-purpose):\` → \`task\` with \`subagent_type: "general"\`
@@ -86,7 +80,7 @@ When skills request actions, substitute OpenCode equivalents:
 
 Use OpenCode's native \`skill\` tool to list and load skills.`;
 
-    _bootstrapCache = `<EXTREMELY_IMPORTANT>
+  _bootstrapCache = `<EXTREMELY_IMPORTANT>
 You have superpowers.
 
 **IMPORTANT: The using-superpowers skill content is included below. It is ALREADY LOADED - you are currently following it. Do NOT use the skill tool to load "using-superpowers" again - that would be redundant.**
@@ -96,9 +90,12 @@ ${content}
 ${toolMapping}
 </EXTREMELY_IMPORTANT>`;
 
-    return _bootstrapCache;
-  };
+  return _bootstrapCache;
+};
 
+export const SuperpowersPlugin = async ({ client, directory }) => {
+  const homeDir = os.homedir();
+  const superpowersSkillsDir = path.resolve(__dirname, '../../skills');
   return {
     // Inject skills path into live config so OpenCode discovers superpowers skills
     // without requiring manual symlinks or config file edits.
@@ -122,7 +119,7 @@ ${toolMapping}
     // arrays may need injection again, so getBootstrapContent() must not do
     // repeated disk work.
     'experimental.chat.messages.transform': async (_input, output) => {
-      const bootstrap = getBootstrapContent();
+      const bootstrap = getBootstrapContent(superpowersSkillsDir);
       if (!bootstrap || !output.messages.length) return;
       const firstUser = output.messages.find(m => m.info.role === 'user');
       if (!firstUser || !firstUser.parts.length) return;
@@ -136,4 +133,48 @@ ${toolMapping}
       firstUser.parts.unshift({ ...ref, type: 'text', text: bootstrap });
     }
   };
+};
+
+// OpenCode V2 entrypoint. The V1 plugin above is kept as `server()` so older
+// OpenCode releases keep working from the same package.
+const skillsDir = path.resolve(__dirname, '../../skills');
+
+const listSkills = () => {
+  if (!fs.existsSync(skillsDir)) return [];
+  return fs.readdirSync(skillsDir, { withFileTypes: true }).flatMap((entry) => {
+    const skillPath = path.join(skillsDir, entry.name, 'SKILL.md');
+    if (!entry.isDirectory() || !fs.existsSync(skillPath)) return [];
+    const content = fs.readFileSync(skillPath, 'utf8');
+    const { frontmatter } = extractAndStripFrontmatter(content);
+    return [{
+      id: entry.name,
+      name: frontmatter.name || entry.name,
+      description: frontmatter.description,
+      path: skillPath,
+      content,
+    }];
+  });
+};
+
+const setup = async (ctx) => {
+  const skills = listSkills();
+  await ctx.skill.transform((editor) => {
+    skills.forEach((skill) => editor.add(skill));
+  });
+
+  await ctx.session.hook('context', (event) => {
+    const bootstrap = getBootstrapContent(skillsDir);
+    if (!bootstrap) return;
+    const firstUser = event.messages.find((m) => m.role === 'user');
+    if (!firstUser) return;
+    const parts = Array.isArray(firstUser.content) ? firstUser.content : [];
+    if (parts.some((p) => p.type === 'text' && p.text.includes('EXTREMELY_IMPORTANT'))) return;
+    firstUser.content = [{ type: 'text', text: bootstrap }, ...parts];
+  });
+};
+
+export default {
+  id: 'superpowers',
+  setup,
+  server: SuperpowersPlugin,
 };
