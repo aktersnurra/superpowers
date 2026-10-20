@@ -5,7 +5,7 @@
 # Drill coverage: evals/scenarios/sdd-rejects-extra-features.yaml covers the
 # YAGNI enforcement subset (forbidden exports + reviewer-as-gate semantics)
 # and is stricter on that axis. This bash test additionally asserts:
-#   - >=3 git commits (initial + per-task commits, exercising SDD's
+#   - >=3 jj commits (initial + per-task commits, exercising SDD's
 #     commit-per-task workflow shape)
 #   - >=2 Claude Code subagent dispatches via Agent or Task (drill only asserts >=1)
 #   - Claude Code task-tracking tool usage (drill makes no assertion)
@@ -275,7 +275,7 @@ echo ""
 
 # Test 7: Git commits show proper workflow
 echo "Test 7: Git commit history..."
-commit_count=$(git -C "$TEST_PROJECT" log --oneline | wc -l)
+commit_count=$(jj -R "$TEST_PROJECT" log --no-graph -r "::@- ~ root()" -T 'commit_id ++ "\n"' | wc -l)
 if [ "$commit_count" -gt 2 ]; then  # Initial + at least 2 task commits
     echo "  [PASS] Multiple commits created ($commit_count total)"
 else

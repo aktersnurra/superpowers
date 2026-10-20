@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# Read-only history adapter shared by the plan helpers. Prefer jj even in a
+# colocated repo: Git's HEAD does not represent jj's working-copy change.
+# Source this file; it does not change revisions, bookmarks, or files.
+
+# Inspect the closest repository marker independently of installed binaries.
+# A broken/missing jj must never cause a colocated repo to be treated as Git.
+# A nested Git-only repo likewise must not inherit an outer jj workspace.
+SDD_VCS=git
+sdd_probe=$(pwd -P)
+while :; do
+  if [ -e "$sdd_probe/.jj" ]; then
+    if ! command -v jj >/dev/null 2>&1 || ! jj root >/dev/null; then
+      echo "jj workspace detected but jj is unavailable or unusable; refusing Git fallback" >&2
+      return 2
+    fi
+    SDD_VCS=jj
+    break
+  fi
+  [ -e "$sdd_probe/.git" ] && break
+  [ "$sdd_probe" = / ] && break
+  sdd_probe=$(dirname "$sdd_probe")
+done
+unset sdd_probe
+
+vcs_root() {
+  if [ "$SDD_VCS" = jj ]; then jj root; else git rev-parse --show-toplevel; fi
+}
+
+vcs_resolve() {
+  local rev=$1 id
+  if [ "$SDD_VCS" = jj ]; then
+    # HEAD remains accepted for compatibility with upstream helper callers.
+    if [ "$rev" = HEAD ]; then vcs_head; return; fi
+    id=$(jj log --no-graph -r "$rev" -T 'commit_id ++ "\n"') || return 1
+    # A revset must resolve to exactly one commit, not an arbitrary set.
+    [[ "$id" =~ ^[0-9a-f]{40,64}$ ]] || return 1
+    printf '%s\n' "$id"
+  else
+    git rev-parse --verify --quiet "${rev}^{commit}"
+  fi
+}
+
+vcs_head() {
+  if [ "$SDD_VCS" = jj ]; then
+    # @ is rewritten by snapshots. Require the normal task boundary: jj commit
+    # (or jj describe + jj new) has left an empty @ above the completed work.
+    if [ "$(jj log --no-graph -r @ -T empty)" != true ]; then
+      echo "finish the current jj change and run jj new (or jj commit) before recording a task boundary" >&2
+      return 2
+    fi
+    vcs_resolve @-
+  else
+    git rev-parse HEAD
+  fi
+}
+
+vcs_count() {
+  if [ "$SDD_VCS" = jj ]; then
+    jj log --no-graph -r "$1..$2" -T 'commit_id ++ "\n"' | wc -l | tr -d ' '
+  else
+    git rev-list --count "$1..$2"
+  fi
+}
+
+vcs_is_ancestor() {
+  if [ "$SDD_VCS" = jj ]; then
+    [ -n "$(jj log --no-graph -r "$1 & ancestors($2)" -T commit_id)" ]
+  else
+    git merge-base --is-ancestor "$1" "$2"
+  fi
+}
+
+vcs_log() {
+  if [ "$SDD_VCS" = jj ]; then
+    jj log --no-graph -r "$1..$2" -T 'commit_id.short(12) ++ " " ++ description.first_line() ++ "\n"'
+  else
+    git log --oneline "$1..$2"
+  fi
+}
+
+vcs_diff() {
+  local base=$1 head=$2 format=$3
+  if [ "$SDD_VCS" = jj ]; then
+    if [ "$format" = stat ]; then
+      jj diff --from "$base" --to "$head" --stat --color never
+    else
+      jj diff --from "$base" --to "$head" --git --context 10 --color never
+    fi
+  elif [ "$format" = stat ]; then
+    git diff --stat "$base..$head"
+  else
+    git diff -U10 "$base..$head"
+  fi
+}
