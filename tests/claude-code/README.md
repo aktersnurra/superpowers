@@ -107,7 +107,7 @@ Full workflow execution test (~10-30 minutes):
   - Spec reviewer reads code independently
   - Working implementation is produced
   - Tests pass
-  - Proper git commits created
+  - Proper jj commits created
 
 **What it tests:**
 - The workflow actually works end-to-end
@@ -161,3 +161,12 @@ To run in CI:
 - Focus on verifying key skill requirements
 - Tests should be deterministic
 - Avoid testing implementation details
+
+### Plan helpers with jj
+
+Run `bash tests/claude-code/test-jj-plan-scripts.sh` from the repository root
+with `jj` on PATH. This uses real colocated and non-colocated jj repositories
+and a second workspace. It checks stable task boundaries, ignored artifacts,
+plan-name collisions, multi-commit review packages, invalid completion/review
+ranges, failed tests, missing or broken jj, nested Git-only repositories, and
+preservation of unfinished work. It does not require a coding-agent CLI.

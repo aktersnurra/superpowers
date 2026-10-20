@@ -6,13 +6,29 @@ Superpowers is a complete software development methodology for your coding agent
 
 Give your agent Superpowers from this fork: [Claude Code](#claude-code), [Pi](#pi), [OpenCode](#opencode).
 
+## This fork
+
+Based on upstream **v7.0.0** (`obra/superpowers` at `bb92a77`). This fork keeps
+Claude Code, Pi, and OpenCode installation guidance and uses **jj** for active
+development workflows. Pi retains its manual bootstrap visibility and embedded
+skill catalog. OpenCode supports V1 and V2 (2.0.4+).
+
+Plan progress and review helpers use jj in jj repositories, including workspaces
+without a colocated `.git/`; Git-only repositories retain a compatibility path.
+Completed tasks leave an empty `@` after `jj commit`, so recorded review ranges
+refer to stable completed commits. Sequential work reuses the current checkout;
+parallel working trees use `jj workspace`.
+
+Upstream's new brainstorming, leaner plans, inline execution, plan-scoped
+progress, review fixes, and `diagnosing-superpowers` skill are included.
+
 ## How it works
 
 It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it _doesn't_ just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do.
 
 Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest.
 
-After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY.
+When the task needs a plan, your agent records the decisions, interfaces, tests, and verification an implementer needs. Planning scales to the work. It emphasizes red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY.
 
 Next up, once you say "go", it launches a _subagent-driven-development_ process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for Claude to be able to work autonomously for a couple hours at a time without deviating from the plan you put together.
 
@@ -71,17 +87,17 @@ already use it in another harness.
 
 1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
 
-2. **using-jj-workspaces** - Activates after design approval. Creates an isolated jj workspace, runs project setup, verifies clean test baseline.
+2. **using-jj-workspaces** - Activates after design approval. Inspects the current checkout, creates a jj workspace when isolation is needed, and verifies the test baseline.
 
-3. **writing-plans** - Activates with approved design. Breaks work into bite-sized tasks (2-5 minutes each). Every task has exact file paths, complete code, verification steps.
+3. **writing-plans** - Activates with approved design. Records checkable tasks with exact paths, signatures, test assertions, and verification steps, without writing the implementation in advance.
 
-4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
+4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes the plan inline with a durable progress ledger and a final review.
 
 5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
 
 6. **requesting-code-review** - Activates between tasks. Reviews against plan, reports issues by severity. Critical issues block progress.
 
-7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, presents jj workflow options (publish/keep/squash/discard), and cleans up only confirmed workspaces.
+7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, follows the authorized jj publish/keep/squash workflow, and cleans up only confirmed workspaces.
 
 **The agent checks for relevant skills before any task.** Mandatory workflows, not suggestions.
 
@@ -91,7 +107,7 @@ already use it in another harness.
 
 **Testing**
 
-- **test-driven-development** - RED-GREEN-REFACTOR cycle (includes testing anti-patterns reference)
+- **test-driven-development** - RED-GREEN-REFACTOR cycle (includes writing-good-tests reference)
 
 **Debugging**
 
@@ -100,9 +116,10 @@ already use it in another harness.
 
 **Collaboration**
 
-- **brainstorming** - Socratic design refinement
+- **diagnosing-superpowers** - Evidence-based session diagnosis
+- **brainstorming** - Design refinement scaled to the request
 - **writing-plans** - Detailed implementation plans
-- **executing-plans** - Batch execution with checkpoints
+- **executing-plans** - Inline execution with durable progress and final review
 - **dispatching-parallel-agents** - Concurrent subagent workflows
 - **requesting-code-review** - Pre-review checklist
 - **receiving-code-review** - Responding to feedback
